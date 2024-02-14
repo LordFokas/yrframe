@@ -1,10 +1,12 @@
 {
 	"compilerOptions": {
+		"declaration": true,
 		"esModuleInterop": true,
 		"moduleResolution": "node",
 		"module": "ESNext",
 		"target": "ESNext",
 		"useDefineForClassFields": true,
+		
 
 		"noImplicitAny": true,
 		"allowJs": true,

@@ -1,0 +1,25 @@
+{
+  "name": "@lordfokas/yrframe",
+  "version": "0.1.0",
+  "description": "A Typescript class-based WebComponents library using Material Design.",
+  "main": "dist/yrframe.js",
+  "scripts": {
+    "prebuild": "rm -rf ./dist",
+    "build": "tsc -p ./tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "material",
+    "design",
+    "components",
+    "typescript"
+  ],
+  "author": "LordFokas",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@lordfokas/event-bus": "^1.0.1"
+  }
+}

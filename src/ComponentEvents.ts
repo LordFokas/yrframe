@@ -156,7 +156,7 @@ export class ComponentEvents {
     /** Fire a source function and process the returned data. */
     seek<T extends Event>(name: string, callback: Callback<T>){
         if(!this.sources[name]) callback.call(this.component, undefined, undefined);
-        else this.sources[name].call(callback);
+        else this.sources[name].call(undefined, callback);
     }
 
     /** Create a function that will fire an event to export data. */

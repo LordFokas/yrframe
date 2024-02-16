@@ -8,6 +8,8 @@ export class Component<A extends Attributes> extends HTMLElement {
     /** Attribute Event Qualifier chars. Attributes starting with this are special. */
     static readonly AEQ = 'yr:';
     readonly [evt]: ComponentEvents;
+	protected initialChildren = [] as (Node|string)[];
+	private wasConnected = false;
 
     protected events(){
         return this[evt];
@@ -33,6 +35,14 @@ export class Component<A extends Attributes> extends HTMLElement {
 		ComponentFactory.setAttributesAndEvents(this, attrs);
     }
 
+	/** Override HTMLElement */
+	append(...nodes: (string | Node)[]): void {
+		if(!this.wasConnected){
+			this.initialChildren.push(...nodes);
+		}
+		super.append(...nodes);
+	}
+
     /** Remove all children nodes. */
     clearChildren(){
 		this.innerHTML = "";
@@ -49,12 +59,15 @@ export class Component<A extends Attributes> extends HTMLElement {
 
     /** HTML5 Custom Element lifecycle callback (add to page) */
 	connectedCallback(){
+		this.wasConnected = true;
 		this[evt].connect();
 		this.redraw();
 	}
 
     /** Draw this component's internals. Should return only children nodes. */
-	render() : HTMLElement|HTMLElement[]|string|null { return null; }
+	render() : Node|string|(Node|string)[]|null {
+		return this.initialChildren;
+	}
 
     /** Redraw this component. Works by deleting all children, calling render() and appending the results. */
 	redraw(){
@@ -62,9 +75,9 @@ export class Component<A extends Attributes> extends HTMLElement {
 		this.clearChildren();
 		if(child){
 			if(Array.isArray(child)){
-				ComponentFactory.appendChildren(this, child);
+				ComponentFactory.appendChildren(this, ...child);
 			}else{
-				ComponentFactory.appendChildren(this, [child] as any[]);
+				ComponentFactory.appendChildren(this, child);
 			}
 		}
 		this.inject();

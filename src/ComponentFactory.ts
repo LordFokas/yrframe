@@ -27,7 +27,7 @@ export class ComponentFactory {
 
 		// Append children if any
 		if(children && children.length > 0){
-			this.appendChildren(element, children);
+			this.appendChildren(element, ...children);
 		}
 
 		return element;
@@ -47,7 +47,7 @@ export class ComponentFactory {
 	}
 
 	/** Logic for appending children to a parent element according to the possible returns of render() */
-	static appendChildren(element:HTMLElement, children:HTMLElement[]){
+	static appendChildren(element:HTMLElement, ...children:(string|Node)[]){
 		for(const child of children){
 			// Allow returning null from render() when there is nothing to do
 			if(child === null) continue;

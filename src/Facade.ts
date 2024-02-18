@@ -1,6 +1,6 @@
 import { ComponentEvents } from "./ComponentEvents.js";
 import { ComponentFactory } from "./ComponentFactory.js";
-import { Attributes, Source } from "./utils.js";
+import { Attributes, Source, specialAttributes } from "./utils.js";
 
 const evt = Symbol('evt');
 
@@ -15,33 +15,19 @@ type FacadeElement = HTMLElement & EventHost & {
  * Used for aliasing and adapting components from other libraries.
  */
 export class Facade<A extends Attributes>{
-    static readonly AEQ = 'yr:'; // TODO: centralize these
     protected readonly node: FacadeElement;
     protected readonly isCustom: boolean;
 
     protected events(){
+        if(!this.node[evt]){ // Lazily instantiate event manager
+            this.node[evt] = new ComponentEvents(this.node);
+        }
         return this.node[evt];
     }
 
     constructor(tag: string, props:Partial<A>, defaults?:Partial<A>){
         const node = this.node = document.createElement(tag) as FacadeElement;
-        const events = node[evt] = new ComponentEvents(node);
         this.isCustom = tag.includes('-');
-
-        // Attach to existing lifecycle callbacks.
-        if(this.isCustom){
-            const { connectedCallback, disconnectedCallback } = node;
-            node.connectedCallback = () => {
-                events.connect();
-                return connectedCallback?.call(node);
-            }
-            node.disconnectedCallback = () => {
-                events.disconnect();
-                return disconnectedCallback?.call(node);
-            }
-        }else{ // TODO: rethink this, there's clearly use cases for it.
-            throw new Error(`Facade for native element '${tag}' cannot hook to lifecycle calls.`);
-        }
 
         const all:Partial<A> = {};
 
@@ -51,7 +37,7 @@ export class Facade<A extends Attributes>{
 
         const attrs:Partial<A> = {};
 		for(const [k, v] of Object.entries(all)){
-			if(!k.startsWith(Facade.AEQ)){
+			if(!specialAttributes.test(k)){
 				(attrs as Attributes)[k] = v;
 			}
 		}
@@ -60,6 +46,27 @@ export class Facade<A extends Attributes>{
     }
 
     content(){
+        // Dispose of unused event manager
+        if(this.node[evt]?.isEmpty()){
+            delete this.node[evt];
+        }
         return this.node;
     }
 }
+
+(function FacadeMutationObserver(){
+    new MutationObserver((records) => {
+        for(const record of records){
+            for(const added of record.addedNodes){
+                if(added instanceof HTMLElement){
+                    (added as any)[evt]?.connect();
+                }
+            }
+            for(const removed of record.removedNodes){
+                if(removed instanceof HTMLElement){
+                    (removed as any)[evt]?.disconnect();
+                }
+            }
+        }
+    }).observe(document.body, {subtree: true, childList: true});
+})();

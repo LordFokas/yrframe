@@ -9,3 +9,5 @@ export type Source<T> = () => T;
 export function has($:any){
 	return $ !== undefined;
 }
+
+export const specialAttributes = /^[a-z]+\:/;

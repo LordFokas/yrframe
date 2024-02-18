@@ -1,12 +1,10 @@
 import { ComponentEvents } from "./ComponentEvents.js";
 import { ComponentFactory } from "./ComponentFactory.js";
-import { Attributes } from "./utils.js";
+import { Attributes, specialAttributes } from "./utils.js";
 
 const evt = Symbol('evt');
 
 export class Component<A extends Attributes> extends HTMLElement {
-    /** Attribute Event Qualifier chars. Attributes starting with this are special. */
-    static readonly AEQ = 'yr:';
     readonly [evt]: ComponentEvents;
 	protected initialChildren = [] as (Node|string)[];
 	private wasConnected = false;
@@ -27,7 +25,7 @@ export class Component<A extends Attributes> extends HTMLElement {
 
         const attrs:Partial<A> = {};
 		for(const [k, v] of Object.entries(all)){
-			if(!k.startsWith(Component.AEQ)){
+			if(!specialAttributes.test(k)){
 				(attrs as Attributes)[k] = v;
 			}
 		}
@@ -80,11 +78,11 @@ export class Component<A extends Attributes> extends HTMLElement {
 				ComponentFactory.appendChildren(this, child);
 			}
 		}
-		this.inject();
+		this.renderedCallback();
 	}
 
     /** Called after redraw() to do special manipulation of children nodes. */
-	inject(){}
+	renderedCallback(){}
 
     /** Get this component's real width in pixels. */
 	width(){

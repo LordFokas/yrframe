@@ -48,19 +48,16 @@ export class ComponentFactory {
 
 	/** Logic for appending children to a parent element according to the possible returns of render() */
 	static appendChildren(element:HTMLElement, ...children:(string|Node)[]){
-		for(const child of children){
-			// Allow returning null from render() when there is nothing to do
-			if(child === null) continue;
-
-			// Disallow returning undefined to prevent mistakes being ignored. No-ops must explicitely return null.
-			if(child === undefined) throw new Error("An element's child cannot be undefined");
-
-			if(Array.isArray(child)){  // Allow returning multiple elements from render()
-				this.appendChildren(element, child);
-			}else{
-				element.append(child);
-			}
-		}
+		element.append(
+			...(children
+				.flat(5) // flatten arrays of arrays up to depth=5 (should be enough, if you have more, fuck you)
+				.filter(c => c !== null) // ignore nulls
+				.map(c => { // throw errors on undefineds
+					if(c === undefined) throw new Error("An element's child cannot be undefined");
+					return c; // accept anything else
+				})
+			)
+		);
 	}
 }
 

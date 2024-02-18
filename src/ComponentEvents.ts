@@ -27,10 +27,16 @@ export class ComponentEvents {
     private triggers = {} as Record<string, Callback<any>>;
     private readonly component: HTMLElement;
     private readonly owner: string;
+    /** Used to keep track of internal mechanisms (triggers and sources) */
+    private internals = 0;
 
     constructor(component: HTMLElement){
         this.component = component;
-        this.owner = component.constructor.name;
+        this.owner = component instanceof Component ? component.constructor.name : '<'+component.tagName.toLowerCase()+'>';
+    }
+
+    isEmpty(){
+        return (this.listeners.length + this.internals) === 0;
     }
 
     /** Called by the component when entering DOM */
@@ -115,18 +121,18 @@ export class ComponentEvents {
         );
     }
 
-    /** Attach a listener that disables a component based on a boolean event field. */
-    attachDisabler <T extends Event, K1 extends keyof T>
-    (target: EventTarget<T, K1>|undefined, source:Source<HTMLElement>, name: string, optional?:Optional){
-        if(this.skip(target, name, "disabler", optional)) return;
+    /** Attach a listener that adds or removes a flag attribute from a component based on a boolean event field. */
+    attachFlagger <T extends Event, K1 extends keyof T>
+    (target: EventTarget<T, K1>|undefined, source:Source<HTMLElement>, flag: string, ref: boolean, name: string, optional?:Optional){
+        if(this.skip(target, name, "flagger", optional)) return;
         this.createListener(target, name, (value, _) => {
             if(typeof value !== "boolean") return;
-			const element = source.call(this);
-			if(value){
-				element.setAttribute("disabled", "");
-			}else{
-				element.removeAttribute("disabled");
-			}
+            const element = source.call(this);
+            if(value === ref){
+                element.setAttribute(flag, "");
+            }else{
+                element.removeAttribute(flag);
+            }
         });
     }
 
@@ -140,6 +146,7 @@ export class ComponentEvents {
                 callback.call(this.component, event.traverse(...path as string[]), event);
             });
         }
+        this.internals++;
     }
 
     /** Create a fake source function that supplies a static or local value. */
@@ -151,6 +158,7 @@ export class ComponentEvents {
         this.sources[name] = (callback: Callback<any>) => {
             callback.call(this.component, source.call(this.component), undefined);
         };
+        this.internals++;
     }
 
     /** Fire a source function and process the returned data. */
@@ -172,6 +180,7 @@ export class ComponentEvents {
 			if(path.length > 1) throw new Error("Unsupported path length > 1 for triggers");
 			event.publish();
         };
+        this.internals++;
     }
 
     /** Fire a trigger function with the given data. */

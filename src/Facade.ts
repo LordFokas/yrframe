@@ -17,6 +17,7 @@ type FacadeElement = HTMLElement & EventHost & {
 export class Facade<A extends Attributes>{
     protected readonly node: FacadeElement;
     protected readonly isCustom: boolean;
+    protected initialChildren = [] as (Node|string)[];
 
     protected events(){
         if(!this.node[evt]){ // Lazily instantiate event manager
@@ -51,6 +52,10 @@ export class Facade<A extends Attributes>{
             delete this.node[evt];
         }
         return this.node;
+    }
+
+    setInitialChildren(children: (Node|string)[]){
+        this.initialChildren = children;
     }
 }
 

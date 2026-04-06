@@ -14,9 +14,11 @@ export class ComponentFactory {
 		
 		// Initialize Element
 		let element:HTMLElement;
+		let facade:Facade<any> = undefined;
 		if(typeof tag === 'function'){ // Construct class based components
 			if(tag.prototype instanceof Facade){
-				element = new (tag as Class<Facade<any>>)(props ?? {}).content();
+				facade = new (tag as Class<Facade<any>>)(props ?? {});
+				element = facade.content();
 			}else{
 				element = new tag(props ?? {});
 			}
@@ -27,6 +29,7 @@ export class ComponentFactory {
 
 		// Append children if any
 		if(children && children.length > 0){
+			facade?.setInitialChildren(children);
 			this.appendChildren(element, ...children);
 		}
 

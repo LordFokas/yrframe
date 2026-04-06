@@ -1,6 +1,6 @@
 {
   "name": "@lordfokas/yrframe",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "A Typescript class-based WebComponents library using Material Design.",
   "main": "dist/yrframe.js",
   "scripts": {

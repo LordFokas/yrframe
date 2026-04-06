@@ -59,18 +59,23 @@ export class Facade<A extends Attributes>{
     }
 }
 
+function traverseHTML(node:any, fn:(node:HTMLElement) => void) {
+    if(node instanceof HTMLElement){
+        fn(node);
+        for(const child of node.children){
+            traverseHTML(child, fn);
+        }
+    }
+}
+
 (function FacadeMutationObserver(){
     new MutationObserver((records) => {
         for(const record of records){
             for(const added of record.addedNodes){
-                if(added instanceof HTMLElement){
-                    (added as any)[evt]?.connect();
-                }
+                traverseHTML(added, (node) => (node as any)[evt]?.connect());
             }
             for(const removed of record.removedNodes){
-                if(removed instanceof HTMLElement){
-                    (removed as any)[evt]?.disconnect();
-                }
+                traverseHTML(removed, (node) => (node as any)[evt]?.disconnect());
             }
         }
     }).observe(document.body, {subtree: true, childList: true});

@@ -2,8 +2,8 @@
 	"compilerOptions": {
 		"declaration": true,
 		"esModuleInterop": true,
-		"moduleResolution": "node",
-		"module": "ESNext",
+		"moduleResolution": "NodeNext",
+		"module": "NodeNext",
 		"target": "ESNext",
 		"useDefineForClassFields": true,
 		
@@ -14,6 +14,7 @@
 		"jsx": "react",
 		"jsxFactory": "ComponentFactory.make",
 
+		"rootDir": "src",
 		"outDir": "dist"
 	},
 	"include": ["src/*"]

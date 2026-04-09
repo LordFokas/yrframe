@@ -14,7 +14,7 @@ export class ComponentFactory {
 		
 		// Initialize Element
 		let element:HTMLElement;
-		let facade:Facade<any> = undefined;
+		let facade:Facade<any>|undefined = undefined;
 		if(typeof tag === 'function'){ // Construct class based components
 			if(tag.prototype instanceof Facade){
 				facade = new (tag as Class<Facade<any>>)(props ?? {});

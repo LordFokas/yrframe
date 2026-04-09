@@ -3,8 +3,10 @@ import { Component } from './Component.js';
 import { Class, Consumer, EventTarget, Source } from './utils.js';
 
 
+export const symbol = Symbol('evt');
+
 type Value = object|string|number|boolean;
-type Callback<T extends Event> = (this:Component<any>, value:T|Value|Value[], evt:T) => void;
+type Callback<T extends Event> = (this:HTMLElement, value:T|Value|Value[], evt:T) => void;
 type Optional = "optional";
 
 class PersistentListener<T extends Event> extends EventListener<T>{
@@ -61,7 +63,7 @@ export class ComponentEvents {
     }
 
     /** Enforce mandatory targets and skip missing optional ones. */
-    private skip (target: EventTarget<any, any>, name: string, kind: string, optional?:Optional){
+    private skip (target: EventTarget<any, any>|undefined, name: string, kind: string, optional?:Optional){
         if(!target){
             if(optional) return true;
             else throw new Error(`Missing config for mandatory ${kind} '${name}' at '${this.owner}'`);
@@ -73,27 +75,26 @@ export class ComponentEvents {
     private attachListener <T extends Event, K1 extends keyof T>
     (target: EventTarget<T, K1>|undefined, handler:Callback<T>, name: string, kind: string, optional?:Optional){
         if(this.skip(target, name, kind, optional)) return;
-        this.createListener(target, name, handler);
+        this.createListener(target as EventTarget<T, K1>, name, handler);
     }
 
     attachGeneric <T extends Event, K1 extends keyof T>
     (target: EventTarget<T, K1>|undefined, handler:Callback<T>, name: string, optional?:Optional){
-        this.attachListener(target, handler, "generic listener", optional);
+        this.attachListener(target, handler, name, "generic listener", optional);
     }
 
     attachConsumer <T extends Event, K1 extends keyof T>
     (target: EventTarget<T, K1>|undefined, handler:Callback<T>, name: string, optional?:Optional){
-        this.attachListener(target, handler, "consumer", optional);
+        this.attachListener(target, handler, name, "consumer", optional);
     }
 
     /** Attach a listener that enriches the target event with data from this component. */
     attachSupplier <T extends Event, K1 extends keyof T>
     (target: EventTarget<T, K1>|undefined, source:Source<any>, name: string, optional?:Optional){
         if(this.skip(target, name, "supplier", optional)) return;
-        const [type, path, nice] = target;
+        const [type, path, nice] = target as EventTarget<T, K1>;
         this.listeners.push(
             new PersistentListener(type, event => {
-                const path = target[1];
                 const data = source.call(this);
                 if(path.length == 0) event.with(data);
                 else if(path.length == 1) event.with({ [path[0]] : data } as T);
@@ -109,10 +110,9 @@ export class ComponentEvents {
     attachRemover <T extends Event, K1 extends keyof T>
     (target: EventTarget<T, K1>|undefined, predicate:Source<boolean>, name: string, optional?:Optional){
         if(this.skip(target, name, "remover", optional)) return;
-        const [type, path, nice] = target;
+        const [type, path, nice] = target as EventTarget<T, K1>;
         this.listeners.push(
             new PersistentListener(type, event => {
-                const path = target[1];
                 if(!predicate.call(this)) return;
                 if(path.length == 0) event.stop(`Halted by '${name}' at '${this.owner}'`);
                 else if(path.length == 1) delete event[path[0]];
@@ -125,7 +125,7 @@ export class ComponentEvents {
     attachFlagger <T extends Event, K1 extends keyof T>
     (target: EventTarget<T, K1>|undefined, source:Source<HTMLElement>, flag: string, ref: boolean, name: string, optional?:Optional){
         if(this.skip(target, name, "flagger", optional)) return;
-        this.createListener(target, name, (value, _) => {
+        this.createListener(target as EventTarget<T, K1>, name, (value, _) => {
             if(typeof value !== "boolean") return;
             const element = source.call(this);
             if(value === ref){
@@ -140,7 +140,7 @@ export class ComponentEvents {
     attachSource <T extends Event, K1 extends keyof T>
     (target: EventTarget<T, K1>|undefined, name: string, optional?:Optional){
         if(this.skip(target, name, "source", optional)) return;
-        const [type, path] = target;
+        const [type, path] = target as EventTarget<T, K1>;
         this.sources[name] = (callback: Callback<T>) => {
             new type().publish().then(event => {
                 callback.call(this.component, event.traverse(...path as string[]), event);
@@ -163,15 +163,15 @@ export class ComponentEvents {
 
     /** Fire a source function and process the returned data. */
     seek<T extends Event>(name: string, callback: Callback<T>){
-        if(!this.sources[name]) callback.call(this.component, undefined, undefined);
-        else this.sources[name].call(undefined, callback);
+        if(!this.sources[name]) throw new Error(`Source '${name}' not found at '${this.owner}`);
+        this.sources[name].call(undefined, callback);
     }
 
     /** Create a function that will fire an event to export data. */
     attachTrigger <T extends Event, K1 extends keyof T>
     (target: EventTarget<T, K1>|undefined, name: string, optional?:Optional){
         if(this.skip(target, name, "trigger", optional)) return;
-        const [type, path] = target;
+        const [type, path] = target as EventTarget<T, K1>;
         this.triggers[name] = (data: any, parent?: Event) => {
             const event = new type();
             if(parent) event.parent(parent);

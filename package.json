@@ -1,7 +1,7 @@
 {
   "name": "@lordfokas/yrframe",
-  "version": "0.4.7",
-  "description": "A Typescript class-based WebComponents library using Material Design.",
+  "version": "0.5.0",
+  "description": "A Typescript class-based WebComponents framework.",
   "main": "dist/yrframe.js",
   "scripts": {
     "prebuild": "rm -rf ./dist",
@@ -9,8 +9,7 @@
     "prepublishOnly": "npm run build"
   },
   "keywords": [
-    "material",
-    "design",
+    "webcomponents",
     "components",
     "typescript"
   ],

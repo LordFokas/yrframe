@@ -1,10 +1,9 @@
-import { ComponentEvents } from "./ComponentEvents.js";
+import { ComponentEvents, symbol as evt } from "./ComponentEvents.js";
 import { ComponentFactory } from "./ComponentFactory.js";
+import { ComponentLogic } from "./ComponentLogic.js";
 import { Attributes, specialAttributes } from "./utils.js";
 
-const evt = Symbol('evt');
-
-export class Component<A extends Attributes> extends HTMLElement {
+export class Component<A extends Attributes> extends HTMLElement implements ComponentLogic {
     readonly [evt]: ComponentEvents;
 	protected initialChildren = [] as (Node|string)[];
 	private wasConnected = false;

@@ -1,2 +1,2 @@
 # yrframe
-A Typescript class-based WebComponents library using Material Design
+A Typescript class-based WebComponents framework

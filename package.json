@@ -1,6 +1,6 @@
 {
   "name": "@lordfokas/yrframe",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A Typescript class-based WebComponents framework.",
   "main": "dist/yrframe.js",
   "scripts": {

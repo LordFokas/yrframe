@@ -2,9 +2,9 @@
 	"compilerOptions": {
 		"declaration": true,
 		"esModuleInterop": true,
-		"moduleResolution": "NodeNext",
-		"module": "NodeNext",
-		"target": "ESNext",
+		"moduleResolution": "bundler",
+		"module": "es2020",
+		"target": "es2020",
 		"useDefineForClassFields": true,
 		
 
